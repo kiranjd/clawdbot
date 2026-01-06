@@ -1193,7 +1193,7 @@ export async function startGatewayServer(
         const jobSpec = buildMemoryConsolidateCronJob(consolidateEvery);
         if (jobSpec) {
           const jobs = await cron.list({ includeDisabled: true });
-          const existing = jobs.find((j) => j.name === "Memory consolidation");
+          const existing = jobs.find((j) => j.id === MEMORY_CONSOLIDATE_CRON_ID);
           if (!existing) {
             await cron.add({
               ...jobSpec,
@@ -1697,7 +1697,7 @@ export async function startGatewayServer(
             if (jobSpec) {
               const jobs = await cron.list({ includeDisabled: true });
               const existing = jobs.find(
-                (j) => j.name === "Memory consolidation",
+                (j) => j.id === MEMORY_CONSOLIDATE_CRON_ID,
               );
               if (!existing) {
                 await cron.add({

@@ -521,6 +521,7 @@ export const MEMORY_CONSOLIDATE_CRON_ID = "memory-consolidate";
  * Returns the cron job spec for memory consolidation.
  */
 export function buildMemoryConsolidateCronJob(consolidateEvery: string): {
+  id: string;
   name: string;
   schedule: { kind: "every"; everyMs: number };
   sessionTarget: "isolated";
@@ -532,6 +533,7 @@ export function buildMemoryConsolidateCronJob(consolidateEvery: string): {
   if (!everyMs) return null;
 
   return {
+    id: MEMORY_CONSOLIDATE_CRON_ID,
     name: "Memory consolidation",
     schedule: { kind: "every", everyMs },
     sessionTarget: "isolated",

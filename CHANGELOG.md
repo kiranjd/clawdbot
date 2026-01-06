@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+### Added
+- Memory: cross-session memory consolidation system with `remember`, `memory_consolidate`, and `memory_recall` tools. Satellite sessions (groups, cron jobs) can log important information to a central inbox; a consolidation job processes fragments into daily logs and long-term `memory.md`. Configurable via `memory.workspace`, `memory.consolidateEvery`, and `memory.maxContextPercent`.
+
 ### Breaking
 - Timestamps in agent envelopes are now UTC (compact `YYYY-MM-DDTHH:mmZ`); removed `messages.timestampPrefix`. Add `agent.userTimezone` to tell the model the user’s local time (system prompt only).
 - Model config schema changes (auth profiles + model lists); doctor auto-migrates and the gateway rewrites legacy configs on startup.
