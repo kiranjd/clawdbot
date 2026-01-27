@@ -1,0 +1,58 @@
+diff --git a/dist/providers/openai-completions.js b/dist/providers/openai-completions.js
+index c4b291d86ce40b2df319c439263d16d67592d22e..449da02d0d2c85309979e392909df5d3fb2ad083 100644
+--- a/dist/providers/openai-completions.js
++++ b/dist/providers/openai-completions.js
+@@ -228,7 +228,13 @@ export const streamOpenAICompletions = (model, context, options) => {
+                     }
+                     const reasoningDetails = choice.delta.reasoning_details;
+                     if (reasoningDetails && Array.isArray(reasoningDetails)) {
++                        // Store ALL reasoning_details for OpenRouter compatibility (not just encrypted)
++                        if (!output._rawReasoningDetails) {
++                            output._rawReasoningDetails = [];
++                        }
+                         for (const detail of reasoningDetails) {
++                            output._rawReasoningDetails.push(detail);
++                            // Also handle encrypted type tied to tool calls (existing behavior)
+                             if (detail.type === "reasoning.encrypted" && detail.id && detail.data) {
+                                 const matchingToolCall = output.content.find((b) => b.type === "toolCall" && b.id === detail.id);
+                                 if (matchingToolCall) {
+@@ -500,19 +506,27 @@ function convertMessages(model, context, compat) {
+                         arguments: JSON.stringify(tc.arguments),
+                     },
+                 }));
+-                const reasoningDetails = toolCalls
+-                    .filter((tc) => tc.thoughtSignature)
+-                    .map((tc) => {
+-                    try {
+-                        return JSON.parse(tc.thoughtSignature);
+-                    }
+-                    catch {
+-                        return null;
++                // First check for raw reasoning_details stored on the message (OpenRouter models like Kimi)
++                const rawDetails = msg._rawReasoningDetails;
++                if (rawDetails && Array.isArray(rawDetails) && rawDetails.length > 0) {
++                    assistantMsg.reasoning_details = rawDetails;
++                }
++                else {
++                    // Fall back to extracting from tool call thoughtSignatures (encrypted type)
++                    const reasoningDetails = toolCalls
++                        .filter((tc) => tc.thoughtSignature)
++                        .map((tc) => {
++                        try {
++                            return JSON.parse(tc.thoughtSignature);
++                        }
++                        catch {
++                            return null;
++                        }
++                    })
++                        .filter(Boolean);
++                    if (reasoningDetails.length > 0) {
++                        assistantMsg.reasoning_details = reasoningDetails;
+                     }
+-                })
+-                    .filter(Boolean);
+-                if (reasoningDetails.length > 0) {
+-                    assistantMsg.reasoning_details = reasoningDetails;
+                 }
+             }
+             // Skip assistant messages that have no content and no tool calls.
